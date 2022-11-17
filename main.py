@@ -4,7 +4,9 @@ from itertools import chain, combinations
 
 def powerset(iterable):
     s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+    for r in range(len(s) + 1):
+        for combination in combinations(s, r):
+            yield combination
 
 
 def generate_sums(n, m):
