@@ -147,8 +147,15 @@ def calculate_v(group, max_tries=10):
 
 
 def main():
-    G = AbelianGroup((2, 2, 2))
-    print(calculate_v(G))
+    groups = (AbelianGroup((2, 2, 2)), AbelianGroup((3, 3)), AbelianGroup((3, 3, 3)),
+              AbelianGroup((2, 4)), AbelianGroup((2, 4, 4)))
+    for g in groups:
+        print(f"V_{calculate_v(g)} holds for {g}")
+        print()
+        print()
+
+    # hint - a group with about 25 elements can take around 2 minutes to check V_6.
+    # with n elements, the ration between calculating V_m and V_m+1 is about ((m+2)/(m+1))^n soooo, yea, painful.
 
 
 if __name__ == '__main__':
