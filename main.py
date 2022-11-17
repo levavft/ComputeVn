@@ -1,16 +1,24 @@
 from datetime import datetime
 from itertools import chain, combinations
+from sympy import lcm
 
 
 class AbelianGroup:
     def __init__(self, limit):
         self.limit = limit
 
-    def get_elements(self, include_zero=True):
+    def elements(self, include_zero=True):
         result = [[]]
         for i in range(len(self.limit)):
             result = [[*tup, j] for tup in result for j in range(self.limit[i])]
-        return (AbelianGroupElement(r, self.limit) for r in result if include_zero or not sum(r) == 0)
+        # print((AbelianGroupElement(r, self.limit) for r in result if include_zero or not sum(r) == 0))
+        return tuple(AbelianGroupElement(r, self.limit) for r in result if include_zero or not sum(r) == 0)
+
+    def maximal_element_order(self):
+        return lcm(*self.limit)
+
+    def zero(self):
+        return AbelianGroupElement([0] * len(self.limit), self.limit)
 
     def __add__(self, other):
         assert isinstance(other, AbelianGroup)
@@ -24,13 +32,16 @@ class AbelianGroupElement:
         :param value: (2, 3)
         :param limit: (4, 4)
         """
-        self.value = value
-        self.limit = limit
+        self.value = tuple(value)
+        self.limit = tuple(limit)
+
+    def __zero_like(self):
+        return AbelianGroupElement([0] * len(self.limit), self.limit)
 
     def __interact(self, other):
         assert isinstance(other, AbelianGroupElement) or other == 0
         if other == 0:
-            other = AbelianGroupElement([0] * len(self.limit), self.limit)
+            other = self.__zero_like()
         assert self.limit == other.limit
         return other
 
@@ -44,6 +55,13 @@ class AbelianGroupElement:
         return AbelianGroupElement(((self.value[i] - other.value[i]) % self.limit[i] for i in range(len(self.value))),
                                    self.limit)
 
+    def __neg__(self):
+        return self.__zero_like() - self
+
+    def __eq__(self, other):
+        other = self.__interact(other)
+        return self.value == other.value
+
     def __repr__(self):
         return str(self.value)
 
@@ -55,32 +73,38 @@ def powerset(iterable):
             yield combination
 
 
-def generate_sums(n, m):
+def generate_sums(group, m):
     """
     generates sums of m digits 0 < a < n, that sum up to a multiple of n.
     assumes n<m
     """
-    assert n < m
-    summand_list = [1] * (m - 1)
+    assert isinstance(group, AbelianGroup)
+    assert group.maximal_element_order() < m
+    summand_index_list = [0] * (m - 1)
+    elements = group.elements(include_zero=False)
+    assert isinstance(elements, tuple)
     index = m - 2
+    n = len(elements)
 
     while True:
         assert index == m - 2
-        last_number = -sum(summand_list) % n
-        if last_number >= summand_list[-1]:
-            # print(*summand_list, last_number)
-            yield *summand_list, last_number
+        last_element = -sum((elements[i] for i in summand_index_list), start=group.zero())
+        if last_element != 0:
+            last_element_index = elements.index(last_element)
+        if last_element != 0 and last_element_index >= summand_index_list[-1]:
+            # print(*summand_index_list, last_element)
+            yield (elements[i] for i in (*summand_index_list, last_element_index))
 
-        while index > -1 and summand_list[index] == n - 1:
+        while index > -1 and summand_index_list[index] == n - 1:
             index -= 1
 
         if index == -1:
             return
 
-        summand_list[index] += 1
-        while index < len(summand_list) - 1:
+        summand_index_list[index] += 1
+        while index < len(summand_index_list) - 1:
             index += 1
-            summand_list[index] = summand_list[index - 1]
+            summand_index_list[index] = summand_index_list[index - 1]
 
 
 def check_subsums(summand_list, n):
@@ -112,9 +136,13 @@ def naive_cyclic_check(n, m):
 def main():
     # for n in range(3, 14):
         # print(f"Does V_{n} hold for C_{n}? {naive_cyclic_check(n, n)}")
+    # G = AbelianGroup((3, 3))
+    # for elem in G.elements(include_zero=False):
+    #     print(elem)
+
     G = AbelianGroup((3, 3))
-    for elem in G.get_elements(include_zero=False):
-        print(elem)
+    for s in generate_sums(G, 4):
+        print(tuple(s))
     # verification time 0:00:08.163018
     # verification time 0:00:01.805139
 
