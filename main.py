@@ -19,8 +19,9 @@ def generate_sums(n, m):
     while True:
         assert index == m - 2
         last_number = -sum(summand_list) % n
-        if last_number != 0:
-            yield *summand_list, last_number  # this code generates a small but annoying amount of duplicates...
+        if last_number >= summand_list[-1]:
+            # print(*summand_list, last_number)
+            yield *summand_list, last_number
 
         while index > -1 and summand_list[index] == n - 1:
             index -= 1
@@ -61,8 +62,10 @@ def naive_cyclic_check(n, m):
 
 
 def main():
-    for n in range(2, 13):
+    for n in range(3, 13):
         print(f"Does V_{n} hold for C_{n}? {naive_cyclic_check(n, n)}")
+    # verification time 0:00:08.163018
+    # verification time 0:00:01.805139
 
 
 if __name__ == '__main__':
