@@ -15,7 +15,7 @@ class AbelianGroup:
         return tuple(AbelianGroupElement(r, self.limit) for r in result if include_zero or not sum(r) == 0)
 
     def maximal_element_order(self):
-        return lcm(*self.limit)
+        return lcm(self.limit)
 
     def zero(self):
         return AbelianGroupElement([0] * len(self.limit), self.limit)
@@ -137,19 +137,18 @@ def naive_group_check(group, m):
     return True
 
 
-def main():
-    # for n in range(3, 14):
-        # print(f"Does V_{n} hold for C_{n}? {naive_cyclic_check(n, n)}")
-    # G = AbelianGroup((3, 3))
-    # for elem in G.elements(include_zero=False):
-    #     print(elem)
+def calculate_v(group, max_tries=10):
+    assert isinstance(group, AbelianGroup)
+    meo = group.maximal_element_order()
+    for m in range(meo + 1, meo + max_tries + 1):
+        result = naive_group_check(group, m)
+        if result:
+            return m
 
-    G = AbelianGroup((3, 3))
-    # for s in generate_sums(G, 4):
-    #     print(tuple(s))
-    naive_group_check(G, 4)
-    # verification time 0:00:08.163018
-    # verification time 0:00:01.805139
+
+def main():
+    G = AbelianGroup((2, 2, 2))
+    print(calculate_v(G))
 
 
 if __name__ == '__main__':
