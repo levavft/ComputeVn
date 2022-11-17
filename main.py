@@ -24,6 +24,9 @@ class AbelianGroup:
         assert isinstance(other, AbelianGroup)
         return AbelianGroup((*self.limit, *other.limit))
 
+    def __repr__(self):
+        return f"<{self.limit}>"
+
 
 class AbelianGroupElement:
     def __init__(self, value, limit):
@@ -89,11 +92,12 @@ def generate_sums(group, m):
     while True:
         assert index == m - 2
         last_element = -sum((elements[i] for i in summand_index_list), start=group.zero())
+        last_element_index = None
         if last_element != 0:
             last_element_index = elements.index(last_element)
         if last_element != 0 and last_element_index >= summand_index_list[-1]:
             # print(*summand_index_list, last_element)
-            yield (elements[i] for i in (*summand_index_list, last_element_index))
+            yield tuple(elements[i] for i in (*summand_index_list, last_element_index))
 
         while index > -1 and summand_index_list[index] == n - 1:
             index -= 1
@@ -107,28 +111,28 @@ def generate_sums(group, m):
             summand_index_list[index] = summand_index_list[index - 1]
 
 
-def check_subsums(summand_list, n):
+def check_sub_sums(summand_list, group):
     for s in powerset(summand_list):
         if len(s) in {len(summand_list), 0}:
             continue
-        if sum(s) % n == 0:
+        if sum(s, start=group.zero()) == group.zero():
             # print(s)
             return True
     return False
 
 
-def naive_cyclic_check(n, m):
+def naive_group_check(group, m):
     """
     assumes n<=m
     :return: True if V_m holds for C_n
     """
-    assert n <= m
-    for summand_list in generate_sums(n, m + 1):
+    assert group.maximal_element_order() <= m
+    for summand_list in generate_sums(group, m + 1):
         # print(summand_list)
-        x = check_subsums(summand_list, n)
+        x = check_sub_sums(summand_list, group)
         # print("----------------------\n\n")
         if not x:
-            print(f"V_{m} doesn't hold for n due to {summand_list}")
+            print(f"V_{m} doesn't hold for {group} due to {summand_list}")
             return False
     return True
 
@@ -141,8 +145,9 @@ def main():
     #     print(elem)
 
     G = AbelianGroup((3, 3))
-    for s in generate_sums(G, 4):
-        print(tuple(s))
+    # for s in generate_sums(G, 4):
+    #     print(tuple(s))
+    naive_group_check(G, 4)
     # verification time 0:00:08.163018
     # verification time 0:00:01.805139
 
