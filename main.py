@@ -1,5 +1,5 @@
 from datetime import datetime
-from itertools import chain, combinations
+from itertools import combinations
 from sympy import lcm
 
 
@@ -132,7 +132,7 @@ def naive_group_check(group, m):
         x = check_sub_sums(summand_list, group)
         # print("----------------------\n\n")
         if not x:
-            print(f"V_{m} doesn't hold for {group} due to {summand_list}")
+            # print(f"V_{m - 1} doesn't hold for {group} due to {summand_list}")
             return False
     return True
 
@@ -143,19 +143,18 @@ def calculate_v(group, max_tries=10):
     for m in range(meo + 1, meo + max_tries + 1):
         result = naive_group_check(group, m)
         if result:
-            return m
+            return m - 1
 
 
 def main():
-    groups = (AbelianGroup((2, 2, 2)), AbelianGroup((3, 3)), AbelianGroup((3, 3, 3)),
-              AbelianGroup((2, 4)), AbelianGroup((2, 4, 4)))
+    groups = (AbelianGroup((2, 2, 3)),)
     for g in groups:
         print(f"V_{calculate_v(g)} holds for {g}")
         print()
         print()
 
     # hint - a group with about 25 elements can take around 2 minutes to check V_6.
-    # with n elements, the ration between calculating V_m and V_m+1 is about ((m+2)/(m+1))^n soooo, yea, painful.
+    # with n elements, the ratio between calculating V_m and V_m+1 is about ((m+2)/(m+1))^n soooo, yea, painful.
 
 
 if __name__ == '__main__':
