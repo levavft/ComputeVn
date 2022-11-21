@@ -76,10 +76,31 @@ def powerset(iterable):
             yield combination
 
 
+def generate_increasing_lexicographical(l, r, length):
+    r"""
+    Generate all numbers of form a_1a_2...a_n where if i<j: a_i <= a_j
+    It might be a good idea to avoid the recursion here. We'll see if it creates problems.
+    :param l: a_i \in {l,l + 1,...,r - 1}
+    :param r: a_i \in {l,l + 1,...,r - 1}
+    :param length: n
+    :return:
+    """
+    assert r > l
+    if length == 1:
+        for i in range(l, r):
+            yield [i]
+    for i in range(l, r):
+        for sub_arr in generate_increasing_lexicographical(i, r, length=length - 1):
+            yield [i, *sub_arr]
+            # we would like to get "feedback" from our yielded number here, if it says "sub sum found!" -->
+            # we can break this inner array. here's a good thing to read (we would probably go for YieldReceive):
+            # https://stackoverflow.com/questions/50913292/python-create-an-iterator-generator-with-feedback
+
+
 def generate_sums(group, m):
     """
     generates sums of m digits 0 < a < n, that sum up to a multiple of n.
-    assumes n<m
+    assumes n < m
     """
     assert isinstance(group, AbelianGroup)
     assert group.maximal_element_order() < m
