@@ -1,30 +1,34 @@
 import unittest
-from datetime import datetime, timedelta
-from main import calculate_v, AbelianGroup
+from datetime import datetime
+from main import memoized_calculate_v
+from main import AbelianGroup as AB
 
 
 class MyTestCase(unittest.TestCase):
-    # the tests here are based on the results of the first version of the code. Replace them with values from papers.
-    # For now version names will just appear in commit names.
-    groups = (*[AbelianGroup((i,)) for i in range(2, 11)],
-              *[AbelianGroup((i, j)) for i in range(2, 5) for j in range(i, 5)],
-              AbelianGroup((2, 2, 2)), AbelianGroup((2, 2, 3)))
-    results = (*[i for i in range(2, 11)], 2, 6, 4, 4, 12, 6, 3, 6)
-    times = [timedelta(0), timedelta(0), timedelta(0), timedelta(0), timedelta(microseconds=31660),
-             timedelta(microseconds=94162), timedelta(microseconds=329380),
-             timedelta(seconds=1, microseconds=405246), timedelta(seconds=5, microseconds=256897), timedelta(0),
-             timedelta(microseconds=16058), timedelta(microseconds=15737), timedelta(microseconds=46975),
-             timedelta(seconds=86, microseconds=734311), timedelta(seconds=7, microseconds=27984), timedelta(0),
-             timedelta(seconds=1, microseconds=99336)]
+    # groups and their values are taken from citation 6 of the paper we're looking at.
+    group_values = {AB((2, )): 2,
+                    AB((3, )): 3, AB((2, 2)): 3,
+                    AB((4, )): 4, AB((2, 2, 2)): 4,
+                    AB((5, )): 5, AB((3, 3)): 5, AB((2, 4)): 5, AB((2, 2, 2, 2)): 5,
+                    AB((6, )): 6, AB((2, 2, 4)): 6,
+                    AB((7, )): 7, AB((4, 4)): 7, AB((2, 6)): 7,
+                    }
 
-    def test(self):
-        for g, r, tt in zip(self.groups, self.results, self.times):
-            with self.subTest(group=g, result=r, time=str(tt)):
+    # too slow for now
+    # additional_group_values = {
+    #     AB([2] * 5): 6,
+    #     AB((3, 3, 3)): 7, AB((2, 2, 2, 4)): 7, AB([2] * 6): 7
+    # }
+
+    def test_validity(self):
+        f = memoized_calculate_v
+        for g, v in self.group_values.items():
+            with self.subTest(function=f, group=g, value=v):
+                info_string = f"\nfunction: {f.__name__}\ngroup: {g}\nresult: {v}"
+                print(f"\n\nstarting: {info_string}")
                 t = datetime.now()
-                self.assertEqual(calculate_v(g), r)
-                # time tends to vary quite a bit between two runs, might also vary between computers.
-                self.assertLessEqual(datetime.now() - t, tt * 1.5 + timedelta(microseconds=10**4),
-                                     msg=f"\ngroup: {g}\nresult: {r}\ntime: {tt}")
+                self.assertEqual(f(g), v, msg=info_string)
+                print(f"took: {datetime.now() - t}")
 
 
 if __name__ == '__main__':
