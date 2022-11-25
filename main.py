@@ -120,7 +120,6 @@ def has_zero_subsum(summands: tuple, g: AbelianGroup):
 def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tuple = None) -> bool:
     """
     TODO: rename function.
-    TODO: reorder the logic of this function. (many lines can be save at a tiny optimization cost)
     TODO: create a non-recursive version as recursions are horrid in python.
     :param g: an abelian group
     :param m: a natural number
@@ -129,13 +128,12 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
     :return: True if V_m holds for g
     """
 
-    assert g.maximal_element_order() <= m and m > 1
+    assert m > 1 and g.maximal_element_order() <= m
     if memo is None:
         memo = set()
     if summands is None:
-        for e in g.non_zero_elements:
-            if not memoized_group_check(g, m, memo, (e, )):
-                return False
+        summands = tuple()
+    if summands in memo:
         return True
 
     if len(summands) == m - 1:
@@ -144,16 +142,14 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
             return True
         return has_zero_subsum(summands, g)
 
-    for i in range(g.order_map[summands[-1]], len(g.non_zero_elements)):
+    start = 0 if len(summands) == 0 else g.order_map[summands[-1]]
+    for i in range(start, len(g.non_zero_elements)):
         new_summands = (*summands, g.non_zero_elements[i])
-        if new_summands in memo:
-            continue
         if has_zero_subsum(new_summands, g):
             memo.add(new_summands)
             continue
         if not memoized_group_check(g, m, memo, new_summands):
             return False
-
     return True
 
 
