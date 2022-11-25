@@ -3,24 +3,27 @@ from sympy import lcm
 import time
 
 
-TOTAL_TIME = dict()
+TOTAL_MEASURE = dict()
 
 
-def timeit(func):
+def measure(func):
     """
     Decorator for measuring function's running time.
     Includes time of inner function calls, hence not suitable for recursion.
     """
-    def measure_time(*args, **kw):
+    def _measure(*args, **kw):
         fname = func.__qualname__
-        if fname not in TOTAL_TIME:
-            TOTAL_TIME[fname] = 0
-        start_time = time.time()
+        if fname not in TOTAL_MEASURE:
+            TOTAL_MEASURE[fname] = {'Wall Time': 0, 'CPU Time': 0, 'Runs': 0}
+        start_wall_time = time.time()
+        start_cpu_time = time.process_time()
         result = func(*args, **kw)
-        TOTAL_TIME[fname] += time.time() - start_time
+        TOTAL_MEASURE[fname]['Wall Time'] += time.time() - start_wall_time
+        TOTAL_MEASURE[fname]['CPU Time'] += time.process_time() - start_cpu_time
+        TOTAL_MEASURE[fname]['Runs'] += 1
         return result
 
-    return measure_time
+    return _measure
 
 
 class AbelianGroup:
@@ -31,7 +34,7 @@ class AbelianGroup:
         self.non_zero_elements = self.elements(include_zero=False)
         self.order_map = {e: i for i, e in enumerate(self.non_zero_elements)}
 
-    @timeit
+    @measure
     def elements(self, include_zero=True):
         result = [tuple()]
         for i in range(len(self.limit)):
@@ -96,14 +99,14 @@ class AbelianGroupElement:
         return str(self.value)
 
 
-@timeit
+@measure
 def powerset(iterable: tuple):
     for r in range(len(iterable) + 1):
         for combination in combinations(iterable, r):
             yield combination
 
 
-@timeit
+@measure
 def has_zero_subsum(summands: tuple, g: AbelianGroup):
     for s in powerset(summands):
         if len(s) in {len(summands), 0}:
@@ -113,7 +116,7 @@ def has_zero_subsum(summands: tuple, g: AbelianGroup):
     return False
 
 
-@timeit
+@measure
 def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tuple = None) -> bool:
     """
     TODO: rename function.
@@ -154,7 +157,7 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
     return True
 
 
-@timeit
+@measure
 def memoized_calculate_v(g: AbelianGroup, max_tries: int = 10) -> int:
     """
     TODO: rename this function.
@@ -170,7 +173,7 @@ def memoized_calculate_v(g: AbelianGroup, max_tries: int = 10) -> int:
             return m - 1
 
 
-@timeit
+@measure
 def main():
     # to get an insanely detailed time analysis run: python -m cProfile main.py
     AB = AbelianGroup
@@ -187,5 +190,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-    for fname, time in TOTAL_TIME.items():
-        print("Processing time of %s(): %.2f seconds." % (fname, time))
+    for fname, measure in TOTAL_MEASURE.items():
+        s = "\n".join(f"{key}: {measure[key]}" for key in measure.keys())
+        print(f"\n\nMeasures of {fname}():\n{s}\n\n")
+
