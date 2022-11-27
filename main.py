@@ -147,7 +147,7 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
     if summands in memo:
         return True
     if len(summands) > 0 and sum(summands, start=g.zero()) == g.zero():  # this removes about a 1/4rth of the runtime.
-        # memo.add(summands)
+        memo.add(summands)
         # memo.update(permutations(summands))
         return True
 
@@ -161,7 +161,8 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
     for i in range(start, len(g.non_zero_elements)):
         new_summands = (*summands, g.non_zero_elements[i], )
         if has_zero_subsum(new_summands, g, memo):
-            # memo.add(permutations(new_summands))
+            memo.add(new_summands)
+            # memo.update(permutations(summands))
             continue
         if not memoized_group_check(g, m, memo, new_summands):
             return False
