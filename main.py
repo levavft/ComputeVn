@@ -1,6 +1,7 @@
-from itertools import combinations
+from itertools import combinations, permutations
 from sympy import lcm
 import time
+from multiset import Multiset
 
 
 TOTAL_MEASURE = dict()
@@ -34,7 +35,6 @@ class AbelianGroup:
         self.non_zero_elements = self.elements(include_zero=False)
         self.order_map = {e: i for i, e in enumerate(self.non_zero_elements)}
 
-    @measure
     def elements(self, include_zero=True):
         result = [tuple()]
         for i in range(len(self.limit)):
@@ -50,6 +50,13 @@ class AbelianGroup:
     def __add__(self, other):
         assert isinstance(other, AbelianGroup)
         return AbelianGroup((*self.limit, *other.limit))
+
+    def __eq__(self, other):
+        assert isinstance(other, AbelianGroup)
+        return self.limit == other.limit
+
+    def __hash__(self):
+        return hash(f"AbelianGroup(<{self.limit}>)")
 
     def __repr__(self):
         return f"<{self.limit}>"
@@ -90,33 +97,37 @@ class AbelianGroupElement:
 
     def __eq__(self, other):
         other = self.__interact(other)
-        return self.value == other.value
+        return (self.value, self.limit) == (other.value, other.limit)
 
     def __hash__(self):
-        return hash((self.value, self.limit))
+        return hash(f"AbelianGroupElement<{(self.value, self.limit)}>")
 
     def __repr__(self):
         return str(self.value)
 
 
 @measure
-def powerset(iterable: tuple):
-    for r in range(len(iterable) + 1):
+def relevant_powerset(iterable: tuple):
+    for r in range(1, len(iterable) // 2 + 1):
         for combination in combinations(iterable, r):
             yield combination
 
 
 @measure
-def has_zero_subsum(summands: tuple, g: AbelianGroup):
-    for s in powerset(summands):
-        if len(s) in {len(summands), 0}:
-            continue
+def get_similar_sums(summands: tuple, zero_sum: tuple) -> set:
+    diff_tuple = tuple(Multiset(summands).difference(Multiset(zero_sum)))
+    return set(permutations(zero_sum)).union(permutations(diff_tuple))
+
+
+@measure
+def has_zero_subsum(summands: tuple, g: AbelianGroup, memo: set) -> bool:
+    for s in relevant_powerset(summands):
         if sum(s, start=g.zero()) == g.zero():
+            memo.update(get_similar_sums(summands, s))
             return True
     return False
 
 
-@measure
 def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tuple = None) -> bool:
     """
     TODO: rename function.
@@ -135,17 +146,20 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
         summands = tuple()
     if summands in memo:
         return True
+    if len(summands) > 0 and sum(summands, start=g.zero()) == g.zero():  # this removes about a 1/4rth of the runtime.
+        memo.add(summands)
+        return True
 
     if len(summands) == m - 1:
         summands = (*summands, -sum(summands, start=g.zero()))
         if summands[-1] == g.zero() or g.order_map[summands[-1]] < g.order_map[summands[-2]]:
             return True
-        return has_zero_subsum(summands, g)
+        return has_zero_subsum(summands, g, memo)
 
     start = 0 if len(summands) == 0 else g.order_map[summands[-1]]
     for i in range(start, len(g.non_zero_elements)):
-        new_summands = (*summands, g.non_zero_elements[i])
-        if has_zero_subsum(new_summands, g):
+        new_summands = (*summands, g.non_zero_elements[i], )
+        if has_zero_subsum(new_summands, g, memo):
             memo.add(new_summands)
             continue
         if not memoized_group_check(g, m, memo, new_summands):
