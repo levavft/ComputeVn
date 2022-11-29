@@ -2,6 +2,9 @@ from sympy import lcm
 
 
 class AbelianGroup:
+
+    limit = ();
+    
     def __init__(self, limit: tuple):
         # There probably is a type of iterator that has the same functionality and speed as saving an element order map
         # like this, if this code enters sympy its worth looking up the official method.
@@ -35,6 +38,9 @@ class AbelianGroup:
         return hash(f"AbelianGroup(<{self.limit}>)")
 
     def __repr__(self):
+        return f"<{self.limit}>"
+        
+    def __str__(self):
         return f"<{self.limit}>"
 
 
