@@ -125,7 +125,7 @@ def calculate_v_if_solved(g: AbelianGroup):
     """
 
     def is_pgroup(g: AbelianGroup):
-        return len(set(*primefactors(i) for i in set(g.limit))) == 1
+        return len(set.union(*[set(primefactors(i)) for i in set(g.limit)])) == 1
 
     if len(g.limit) <= 2 or is_pgroup(g):
         return 1 - len(g.limit) + sum(g.limit)
