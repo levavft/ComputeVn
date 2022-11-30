@@ -2,6 +2,7 @@ from itertools import combinations, permutations
 import time
 from multiset import Multiset
 from abeliangroup import AbelianGroup, group_values
+from sympy import primefactors
 
 
 TOTAL_MEASURE = dict()
@@ -107,6 +108,28 @@ def memoized_calculate_v(g: AbelianGroup, max_tries: int = 10) -> int:
         result = memoized_group_check(g, m, memo)
         if result:
             return m - 1
+
+
+def calculate_v_if_solved(g: AbelianGroup):
+    """
+    TODO: rename this function
+    let g = sum_{i=1}^k {C_n_i} be written as invariant factors and let f(g) = 1 - k + sum(n_i) then:
+    f(g) = V(g) in the following cases (due to citation 6):
+    g is a p-group (citation 4 of citation 6)
+    k <= 2 (citation 5 of citation 6)
+    the first two counterexamples of f(g)=V(g) are: C_2^4+C_6 (v(g)>=11) and C_3^3+C_6 (V(g)>=13)
+
+    TODO: this value is also a lower bound, change function to still give that result, but simply also saying if its enough or not.
+    :param g:
+    :return: None if there is no closed form formula, the result of said formula if there is one.
+    """
+
+    def is_pgroup(g: AbelianGroup):
+        return len(set(*primefactors(i) for i in set(g.limit))) == 1
+
+    if len(g.limit) <= 2 or is_pgroup(g):
+        return 1 - len(g.limit) + sum(g.limit)
+    return None
 
 
 @measure
