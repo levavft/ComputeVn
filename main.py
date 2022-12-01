@@ -30,11 +30,12 @@ def measure(func):
 
 
 sum = measure(sum)
+fms = measure(fms)
 
 
 @measure
 def relevant_powerset(iterable: tuple):
-    for r in range(1, len(iterable) // 2 + 1):
+    for r in range(2, len(iterable) // 2 + 1):
         for combination in combinations(iterable, r):
             yield combination
 
