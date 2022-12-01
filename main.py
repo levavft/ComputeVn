@@ -1,8 +1,9 @@
-from itertools import combinations, permutations
+from itertools import combinations
 import time
 from multiset import Multiset
 from abeliangroup import AbelianGroup, group_values
 from sympy import primefactors
+from multiset import FrozenMultiset as fms
 
 
 TOTAL_MEASURE = dict()
@@ -41,7 +42,7 @@ def relevant_powerset(iterable: tuple):
 @measure
 def get_similar_sums(summands: tuple, zero_sum: tuple) -> set:
     diff_tuple = tuple(Multiset(summands).difference(Multiset(zero_sum)))
-    return set(permutations(zero_sum)).union(permutations(diff_tuple))
+    return {fms(zero_sum), fms(diff_tuple)}
 
 
 @measure
@@ -69,11 +70,10 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
         memo = set()
     if summands is None:
         summands = tuple()
-    if summands in memo:
+    if fms(summands) in memo:
         return True
     if len(summands) > 0 and sum(summands, start=g.zero) == g.zero:  # this removes about a 1/4rth of the runtime.
-        memo.add(summands)
-        # memo.update(permutations(summands))
+        memo.add(fms(summands))
         return True
 
     if len(summands) == m - 1:
@@ -86,8 +86,7 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
     for i in range(start, len(g.non_zero_elements)):
         new_summands = (*summands, g.non_zero_elements[i], )
         if has_zero_subsum(new_summands, g, memo):
-            memo.add(new_summands)
-            # memo.update(permutations(summands))
+            memo.add(fms(new_summands))
             continue
         if not memoized_group_check(g, m, memo, new_summands):
             return False
