@@ -134,9 +134,8 @@ def calculate_v_if_solved(g: AbelianGroup):
 
 @measure
 def main():
-    # to get an insanely detailed time analysis run: python -m cProfile main.py
     for g in group_values.keys():
-        print(f"V_{memoized_calculate_v(g)} holds for {g}")
+        print(f"Calculated: V({g})={memoized_calculate_v(g)}\nExpected: V({g})={group_values[g]}\n")
 
 
 if __name__ == '__main__':
