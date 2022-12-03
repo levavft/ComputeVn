@@ -2,7 +2,6 @@ import unittest
 from datetime import datetime
 from main import memoized_calculate_v
 from abeliangroup import group_values
-from sumdirectedgraph import SumDiGraph
 
 
 class MyTestCase(unittest.TestCase):
