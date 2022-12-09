@@ -1,14 +1,13 @@
 from itertools import combinations
 import time
 from multiset import Multiset, FrozenMultiset as fms
-from abeliangroup import AbelianGroup, group_values
+from classes.abeliangroup import AbelianGroup, group_values
 from sympy import primefactors
 
 import algorithms.naive
 import algorithms.treesearch
 
 TOTAL_MEASURE = dict()
-
 
 def measure(func):
     """
