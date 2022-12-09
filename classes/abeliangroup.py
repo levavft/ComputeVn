@@ -1,5 +1,4 @@
-from sympy import lcm
-
+from sympy import lcm, primefactors
 
 class AbelianGroup:
     def __init__(self, limit: tuple):
@@ -19,6 +18,15 @@ class AbelianGroup:
 
     def maximal_element_order(self):
         return lcm(self.limit)
+        
+    def is_pgroup(self):
+        return len(set.union(*[set(primefactors(i)) for i in set(self.limit)])) == 1
+        
+    def as_summand_orders(self):
+        return self.limit
+
+    def summand_count(self):
+        return len(self.limit)
 
     def _zero(self):
         return AbelianGroupElement((0, ) * len(self.limit), self.limit)
@@ -39,7 +47,6 @@ class AbelianGroup:
         
     def __str__(self):
         return f"<{self.limit}>"
-
 
 class AbelianGroupElement:
     def __init__(self, value: tuple, limit: tuple):
@@ -83,32 +90,5 @@ class AbelianGroupElement:
 
     def __repr__(self):
         return str(self.value)
-
-
-# groups and their values are taken from citation 6 of the paper we're looking at.
-AB = AbelianGroup
-group_values = {AB((2, )): 2,
-                AB((3, )): 3, AB((2, 2)): 3,
-                AB((4, )): 4, AB((2, 2, 2)): 4,
-                AB((5, )): 5, AB((3, 3)): 5, AB((2, 4)): 5, AB((2, 2, 2, 2)): 5,
-                AB((6, )): 6, AB((2, 2, 4)): 6, AB(tuple([2] * 5)): 6,
-                AB((7, )): 7, AB((4, 4)): 7, AB((2, 6)): 7,
-                }
-
-
-full_group_values = {AB((2, )): 2,
-                     AB((3, )): 3, AB((2, 2)): 3,
-                     AB((4, )): 4, AB((2, 2, 2)): 4,
-                     AB((5, )): 5, AB((3, 3)): 5, AB((2, 4)): 5, AB((2, 2, 2, 2)): 5,
-                     AB((6, )): 6, AB((2, 2, 4)): 6, AB(tuple([2] * 5)): 6,
-                     AB((7, )): 7, AB((4, 4)): 7, AB((2, 6)): 7, AB((3, 3, 3)): 7, AB((2, 2, 2, 4)): 7, AB(tuple([2] * 6)): 7,
-                     AB((8, )): 8, AB((3, 6)): 8, AB((2, 4, 4)): 8, AB((2, 2, 6)): 8, AB(tuple([2] * 4 + [4])): 8, AB(tuple([2] * 7)): 8,
-                     AB((9, )): 9, AB((2, 8)): 9, AB((5, 5)): 9, AB((2, 2, 4, 4)): 9, AB(tuple([3] * 4)): 9, AB((2, 2, 2, 6)): 9, AB(tuple([2] * 5 + [4])): 9, AB(tuple([2] * 8)): 9,
-                     AB((10, )): 10, AB((2, 2, 8)): 10, AB((4, 4, 4)): 10, AB((3, 3, 6)): 10, AB((2, 2, 2, 4, 4)): 10, AB(tuple([2] * 6 + [4])): 10, AB(tuple([2] * 9)): 10,
-                     }
-
-# too slow for now
-# additional_group_values = {
-#
-#
-# }
+        
+        from classes.abeliangroup import AbelianGroup
