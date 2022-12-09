@@ -28,6 +28,6 @@ class _TimerSingleton:
         return _measure
         
     def report(self):
-        return self.TOTAL_MEASURE;
+        print(self.TOTAL_MEASURE);
         
 Timer = _TimerSingleton()

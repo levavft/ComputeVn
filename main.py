@@ -6,11 +6,10 @@ from sympy                  import primefactors
 import algorithms.naive         as NaiveSearchAlgorithm
 import algorithms.treesearch    as TreeSearchAlgorithm
 
-from classes.helpers.timer import Timer
+from classes.helpers.timer  import Timer
 
 # make decorator
 timed = Timer.measure
-
 sum = timed(sum)
 fms = timed(fms)
 
