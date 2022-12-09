@@ -72,6 +72,16 @@ class AbelianGroupElement:
         other = self.__interact(other)
         return AbelianGroupElement(tuple((self.value[i] + other.value[i]) % self.limit[i] for i in range(len(self.value))),
                                    self.limit)
+    
+    def __mul__(self, other):
+        assert isinstance(other, int)
+        s = self
+        for i in range(other - 1):
+            s = s + self
+        return s
+
+    def __rmul__(self, other):
+        return self.__mul__(self, other)
 
     def __sub__(self, other):
         other = self.__interact(other)
@@ -90,5 +100,4 @@ class AbelianGroupElement:
 
     def __repr__(self):
         return str(self.value)
-        
-        from classes.abeliangroup import AbelianGroup
+
