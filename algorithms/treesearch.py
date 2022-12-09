@@ -6,6 +6,7 @@
 
 from classes.helpers.timer      import Timer
 from classes.abeliangroup       import AbelianGroup
+from classes.multisetextensions import SummableMultiset
 from algorithms.algorithmbase   import VNAlgorithmBase
 
 # make decorator
@@ -18,6 +19,9 @@ class _TreeSearchAlgorithmSingleton(VNAlgorithmBase):
 
     @timed
     def memoized_calculate_v(self, g: AbelianGroup, max_tries: int = 10) -> int:
+        
+        m = SummableMultiset()
+        
         return None
         
 TreeSearchAlgorithm = _TreeSearchAlgorithmSingleton()

@@ -32,4 +32,3 @@ if __name__ == '__main__':
     for fname, measure in Timer.TOTAL_MEASURE.items():
         s = "\n".join(f"{key}: {measure[key]}" for key in measure.keys())
         print(f"\n\nMeasures of {fname}():\n{s}\n\n")
-
