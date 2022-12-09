@@ -1,52 +1,33 @@
-from itertools import combinations
-import time
-from multiset import Multiset, FrozenMultiset as fms
-from classes.abeliangroup import AbelianGroup, group_values
-from sympy import primefactors
+from itertools              import combinations
+from multiset               import Multiset, FrozenMultiset as fms
+from classes.abeliangroup   import AbelianGroup, group_values
+from sympy                  import primefactors
 
-import algorithms.naive
-import algorithms.treesearch
+import algorithms.naive         as NaiveSearchAlgorithm
+import algorithms.treesearch    as TreeSearchAlgorithm
 
-TOTAL_MEASURE = dict()
+from classes.helpers.timer import Timer
 
-def measure(func):
-    """
-    Decorator for measuring function's running time.
-    Includes time of inner function calls, hence not suitable for recursion.
-    """
-    def _measure(*args, **kw):
-        fname = func.__qualname__
-        if fname not in TOTAL_MEASURE:
-            TOTAL_MEASURE[fname] = {'Wall Time': 0, 'CPU Time': 0, 'Runs': 0}
-        start_wall_time = time.time()
-        start_cpu_time = time.process_time()
-        result = func(*args, **kw)
-        TOTAL_MEASURE[fname]['Wall Time'] += time.time() - start_wall_time
-        TOTAL_MEASURE[fname]['CPU Time'] += time.process_time() - start_cpu_time
-        TOTAL_MEASURE[fname]['Runs'] += 1
-        return result
+# make decorator
+timed = Timer.measure
 
-    return _measure
+sum = timed(sum)
+fms = timed(fms)
 
-
-sum = measure(sum)
-fms = measure(fms)
-
-
-@measure
+@timed
 def relevant_powerset(iterable: tuple):
     for r in range(2, len(iterable) // 2 + 1):
         for combination in combinations(iterable, r):
             yield combination
 
 
-@measure
+@timed
 def get_similar_sums(summands: tuple, zero_sum: tuple) -> set:
     diff_tuple = tuple(Multiset(summands).difference(Multiset(zero_sum)))
     return {fms(zero_sum), fms(diff_tuple)}
 
 
-@measure
+@timed
 def has_zero_subsum(summands: tuple, g: AbelianGroup, memo: set) -> bool:
     for s in relevant_powerset(summands):
         if sum(s, start=g.zero) == g.zero:
@@ -94,7 +75,7 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
     return True
 
 
-@measure
+@timed
 def memoized_calculate_v(g: AbelianGroup, max_tries: int = 10) -> int:
     """
     TODO: rename this function.
@@ -132,7 +113,7 @@ def calculate_v_if_solved(g: AbelianGroup):
     return None
 
 
-@measure
+@timed
 def main():
     for g in group_values.keys():
         print(f"Calculated: V({g})={memoized_calculate_v(g)}\nExpected: V({g})={group_values[g]}\n")
