@@ -1,7 +1,10 @@
+import sys
+sys.path.append('../ComputeVn')
+
 import unittest
 from datetime import datetime
 from main import memoized_calculate_v
-from abeliangroup import group_values
+from classes.abeliangroup import group_values
 
 
 class MyTestCase(unittest.TestCase):
@@ -19,3 +22,4 @@ class MyTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    
