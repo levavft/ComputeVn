@@ -51,7 +51,6 @@ class _TreeSearchAlgorithmSingleton(VNAlgorithmBase):
         annoying_sets_current = [ExtendedSummableMultisetPowerset()]
         
         while len(annoying_sets_current) > 0:
-            
             annoying_sets_new = []
             
             #print("CURRENT: ", annoying_sets_current)
@@ -74,9 +73,10 @@ class _TreeSearchAlgorithmSingleton(VNAlgorithmBase):
             #print("NEW: ", annoying_sets_new)
             annoying_sets_current = annoying_sets_new
             
+            size += 1
+        
             if(size > 10):
                 raise bruh
-            size += 1
         
         return size
         
