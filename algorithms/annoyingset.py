@@ -40,9 +40,10 @@ class ExtendedSummableMultisetPowerset:
 class bruh(Exception):
     pass
 
-class _TreeSearchAlgorithmSingleton(VNAlgorithmBase):
+# doesn't work
+class _AnnoyingSetAlgorithmSingleton(VNAlgorithmBase):
     def __init__(self):
-        self.name = "Tree search algorithm"
+        self.name = "Annoying set algorithm"
 
     @timed
     def memoized_calculate_v(self, g: AbelianGroup, max_tries: int = 10) -> int:
@@ -80,4 +81,4 @@ class _TreeSearchAlgorithmSingleton(VNAlgorithmBase):
         
         return size
         
-TreeSearchAlgorithm = _TreeSearchAlgorithmSingleton()
+AnnoyingSetAlgorithm = _AnnoyingSetAlgorithmSingleton()
