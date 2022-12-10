@@ -81,7 +81,10 @@ class AbelianGroupElement:
         return s
 
     def __rmul__(self, other):
-        return self.__mul__(self, other)
+        return self.__mul__(other)
+        
+    def __radd__(self, other):
+        return self.__add__(other)
 
     def __sub__(self, other):
         other = self.__interact(other)

@@ -16,16 +16,29 @@ sum = timed(sum)
 
 class ExtendedSummableMultisetPowerset:
     def __init__(self):
-        self.multisets = []
+        self.multisets = set()
         
-    def add_element(self, e, group_elements):
+    def add_element(self, e):
+        to_append = self.multisets.copy()
+        #print("has: ", self.multisets)
         [m.add(e) for m in self.multisets]
-        self.multisets.append(SummableMultiset([e]))
-        [self.multisets.append(SummableMultiset([g])) for g in group_elements]
+        self.multisets.add(SummableMultiset([e]))
+        self.multisets = self.multisets.union(to_append)
+        #print("has: ", self.multisets)
         
     def is_annoying(self):
-        return any( map( SummableMultiset.sum, self.multisets ) )
+        return not any( map( SummableMultiset.sums_to_zero, self.multisets ) )
+        
+    def __repr__(self):
+        return str(self.multisets)
+        
+    def copy(self):
+        re = ExtendedSummableMultisetPowerset()
+        [re.multisets.add(m.copy()) for m in self.multisets]
+        return re
 
+class bruh(Exception):
+    pass
 
 class _TreeSearchAlgorithmSingleton(VNAlgorithmBase):
     def __init__(self):
@@ -36,24 +49,33 @@ class _TreeSearchAlgorithmSingleton(VNAlgorithmBase):
         
         size = 0
         annoying_sets_current = [ExtendedSummableMultisetPowerset()]
-        group_elements = g.elements(include_zero = False)
         
         while len(annoying_sets_current) > 0:
             
             annoying_sets_new = []
             
-            for e in group_elements:
+            #print("CURRENT: ", annoying_sets_current)
+            
+            for e in g.elements(include_zero = False):
                 for m in annoying_sets_current:
                 
-                    new_m = ExtendedSummableMultisetPowerset()
-                    new_m.multisets = m.multisets
-                    new_m.add_element(e, group_elements)
+                    #print("CURRENT: ", annoying_sets_current)
+                    #print("CHECKING: ", e, m.multisets)
+                
+                    new_m = m.copy()
+                    new_m.add_element(e)
                     
-                    if( new_m.is_annoying( )):
+                    if( new_m.is_annoying() ):
                         annoying_sets_new.append(new_m)
+                        #print("ADDED: ", new_m.multisets)
+                        
+                    #print("NEW (TEMP): ", annoying_sets_new)
             
+            #print("NEW: ", annoying_sets_new)
             annoying_sets_current = annoying_sets_new
             
+            if(size > 10):
+                raise bruh
             size += 1
         
         return size

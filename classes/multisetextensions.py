@@ -2,11 +2,25 @@ from multiset import Multiset
 
 class SummableMultiset(Multiset):
     def __init__(self, em = []):
+        self.tracked_sum = sum(em)
         super().__init__(em)
 
-    def sum(self):
-        print(list(self.items()))
-        return sum( [k * v for k, v in self.items()] )
+    def add(self, e):
+        #print(self.tracked_sum, e)
+        self.tracked_sum = self.tracked_sum + e
+        #print(self.tracked_sum, e)
+        super().add(e)
+
+    def get_sum(self):
+        return self.tracked_sum
+        
+    def sums_to_zero(self):
+        #print(self.items(), self.tracked_sum)
+        return self.tracked_sum == 0
+        
+    # only for abelian case
+    def __hash__(self):
+        return hash(self.tracked_sum)
         
     def add_inline(self, em):
         mc = self.copy()
