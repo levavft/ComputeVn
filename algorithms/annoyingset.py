@@ -16,25 +16,28 @@ sum = timed(sum)
 
 class ExtendedSummableMultisetPowerset:
     def __init__(self):
-        self.multisets = set()
+        self.multisets_nontrivial = set()
+        self.master_multiset = SummableMultiset()
 
     def add_element(self, e):
-        to_append = self.multisets.copy()
+        to_append = self.multisets_nontrivial.copy()
         # print("has: ", self.multisets)
-        [m.add(e) for m in self.multisets]
-        self.multisets.add(SummableMultiset([e]))
-        self.multisets = self.multisets.union(to_append)
+        [m.add(e) for m in self.multisets_nontrivial]
+        self.multisets_nontrivial.add(SummableMultiset([e]))
+        self.multisets_nontrivial = self.multisets_nontrivial.union(to_append)
+        self.multisets_nontrivial.add(self.master_multiset)
+        self.master_multiset.add(e)
         # print("has: ", self.multisets)
 
     def is_annoying(self):
-        return not any(map(SummableMultiset.sums_to_zero, self.multisets))
+        return not any(map(SummableMultiset.sums_to_zero, self.multisets_nontrivial))
 
     def __repr__(self):
-        return str(self.multisets)
+        return str(self.multisets_nontrivial)
 
     def copy(self):
         re = ExtendedSummableMultisetPowerset()
-        [re.multisets.add(m.copy()) for m in self.multisets]
+        [re.multisets_nontrivial.add(m.copy()) for m in self.multisets_nontrivial]
         return re
 
 
