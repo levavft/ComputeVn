@@ -4,23 +4,25 @@
 #   
 #   
 
-from itertools              import combinations
-from multiset               import Multiset, FrozenMultiset as fms
+from itertools import combinations
+from multiset import Multiset, FrozenMultiset as fms
 
-from classes.helpers.timer      import Timer
-from classes.abeliangroup       import AbelianGroup
-from algorithms.algorithmbase   import VNAlgorithmBase
+from classes.helpers.timer import Timer
+from classes.abeliangroup import AbelianGroup
+from algorithms.algorithmbase import VNAlgorithmBase
 
 # make decorator
 timed = Timer.measure
 sum = timed(sum)
 fms = timed(fms)
 
+
 @timed
 def relevant_powerset(iterable: tuple):
     for r in range(2, len(iterable) // 2 + 1):
         for combination in combinations(iterable, r):
             yield combination
+
 
 @timed
 def get_similar_sums(summands: tuple, zero_sum: tuple) -> set:
@@ -67,14 +69,15 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
 
     start = 0 if len(summands) == 0 else g.order_map[summands[-1]]
     for i in range(start, len(g.non_zero_elements)):
-        new_summands = (*summands, g.non_zero_elements[i], )
+        new_summands = (*summands, g.non_zero_elements[i],)
         if has_zero_subsum(new_summands, g, memo):
             memo.add(fms(new_summands))
             continue
         if not memoized_group_check(g, m, memo, new_summands):
             return False
     return True
-    
+
+
 class _NaiveAlgorithmSingleton(VNAlgorithmBase):
     def __init__(self):
         self.name = "Naive algorithm"
@@ -94,5 +97,6 @@ class _NaiveAlgorithmSingleton(VNAlgorithmBase):
             result = memoized_group_check(g, m, memo)
             if result:
                 return m - 1
-        
+
+
 NaiveAlgorithm = _NaiveAlgorithmSingleton()

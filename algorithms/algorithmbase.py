@@ -1,11 +1,13 @@
-from classes.abeliangroup   import AbelianGroup
-from classes.helpers.timer  import Timer
+from classes.abeliangroup import AbelianGroup
+from classes.helpers.timer import Timer
+
 timed = Timer.measure
+
 
 class VNAlgorithmBase:
     def __init__(self):
         self.name = "Base class"
-        
+
     @timed
     def calculate_v_if_solved(self, group_to_calc: AbelianGroup):
         """
@@ -23,5 +25,5 @@ class VNAlgorithmBase:
 
         if group_to_calc.summand_count() <= 2 or group_to_calc.is_pgroup():
             return 1 - group_to_calc.summand_count() + sum(group_to_calc.as_summand_orders())
-            
+
         return None

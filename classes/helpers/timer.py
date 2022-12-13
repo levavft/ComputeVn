@@ -4,6 +4,7 @@
 
 import time
 
+
 class _TimerSingleton:
     def __init__(self):
         self.TOTAL_MEASURE = dict()
@@ -13,6 +14,7 @@ class _TimerSingleton:
         Decorator for measuring function's running time.
         Includes time of inner function calls, hence not suitable for recursion.
         """
+
         def _measure(*args, **kw):
             fname = func.__qualname__
             if fname not in self.TOTAL_MEASURE:
@@ -26,8 +28,9 @@ class _TimerSingleton:
             return result
 
         return _measure
-        
+
     def report(self):
-        print(self.TOTAL_MEASURE);
-        
+        print(self.TOTAL_MEASURE)
+
+
 Timer = _TimerSingleton()

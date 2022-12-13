@@ -1,5 +1,6 @@
 from sympy import lcm, primefactors
 
+
 class AbelianGroup:
     def __init__(self, limit: tuple):
         # There probably is a type of iterator that has the same functionality and speed as saving an element order map
@@ -8,7 +9,8 @@ class AbelianGroup:
         self.non_zero_elements = self.elements(include_zero=False)
         self.order_map = {e: i for i, e in enumerate(self.non_zero_elements)}
         self.zero = self._zero()
-        self.order_map[self.zero] = -float("inf")  # there's a need to rethink what I do with the zero of our abelian groups...
+        self.order_map[self.zero] = -float(
+            "inf")  # there's a need to rethink what I do with the zero of our abelian groups...
 
     def elements(self, include_zero=True):
         result = [tuple()]
@@ -18,10 +20,10 @@ class AbelianGroup:
 
     def maximal_element_order(self):
         return lcm(self.limit)
-        
+
     def is_pgroup(self):
         return len(set.union(*[set(primefactors(i)) for i in set(self.limit)])) == 1
-        
+
     def as_summand_orders(self):
         return self.limit
 
@@ -29,7 +31,7 @@ class AbelianGroup:
         return len(self.limit)
 
     def _zero(self):
-        return AbelianGroupElement((0, ) * len(self.limit), self.limit)
+        return AbelianGroupElement((0,) * len(self.limit), self.limit)
 
     def __add__(self, other):
         assert isinstance(other, AbelianGroup)
@@ -44,9 +46,10 @@ class AbelianGroup:
 
     def __repr__(self):
         return f"<{self.limit}>"
-        
+
     def __str__(self):
         return f"<{self.limit}>"
+
 
 class AbelianGroupElement:
     def __init__(self, value: tuple, limit: tuple):
@@ -59,7 +62,7 @@ class AbelianGroupElement:
         self.limit = limit
 
     def __zero_like(self):
-        return AbelianGroupElement((0, ) * len(self.limit), self.limit)
+        return AbelianGroupElement((0,) * len(self.limit), self.limit)
 
     def __interact(self, other):
         assert isinstance(other, AbelianGroupElement) or other == 0
@@ -70,9 +73,10 @@ class AbelianGroupElement:
 
     def __add__(self, other):
         other = self.__interact(other)
-        return AbelianGroupElement(tuple((self.value[i] + other.value[i]) % self.limit[i] for i in range(len(self.value))),
-                                   self.limit)
-    
+        return AbelianGroupElement(
+            tuple((self.value[i] + other.value[i]) % self.limit[i] for i in range(len(self.value))),
+            self.limit)
+
     def __mul__(self, other):
         assert isinstance(other, int)
         s = self
@@ -82,14 +86,15 @@ class AbelianGroupElement:
 
     def __rmul__(self, other):
         return self.__mul__(other)
-        
+
     def __radd__(self, other):
         return self.__add__(other)
 
     def __sub__(self, other):
         other = self.__interact(other)
-        return AbelianGroupElement(tuple((self.value[i] - other.value[i]) % self.limit[i] for i in range(len(self.value))),
-                                   self.limit)
+        return AbelianGroupElement(
+            tuple((self.value[i] - other.value[i]) % self.limit[i] for i in range(len(self.value))),
+            self.limit)
 
     def __neg__(self):
         return self.__zero_like() - self
@@ -103,4 +108,3 @@ class AbelianGroupElement:
 
     def __repr__(self):
         return str(self.value)
-

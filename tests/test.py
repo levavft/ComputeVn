@@ -1,16 +1,17 @@
 import sys
+
 sys.path.append('../ComputeVn')
 
 import unittest
 from datetime import datetime
-from main import memoized_calculate_v
-from classes.abeliangroup import group_values
+import algorithms
+import datasets
 
 
 class MyTestCase(unittest.TestCase):
     def test_validity_main_code(self):
-        f = memoized_calculate_v
-        for g, v in group_values.items():
+        f = algorithms.NaiveAlgorithm.memoized_calculate_v
+        for g, v in datasets.curated_small.items():
             with self.subTest(function=f, group=g, value=v):
                 info_string = f"\nfunction: {f.__name__}\ngroup: {g}\nexpected: {v}"
                 print(f"\nstarting: {info_string}")
@@ -22,4 +23,3 @@ class MyTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    
