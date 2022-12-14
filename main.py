@@ -21,7 +21,7 @@ def main():
 
     for g in dataset.keys():
         print(
-            f"Calculated: V({g})={algorithms.NaiveAlgorithm.memoized_calculate_v(g)}\nExpected: V({g})={dataset[g]}\n")
+            f"Calculated: V({g})={algorithms.AnnoyingSetAlgorithmLevavsTry.memoized_calculate_v(g)}\nExpected: V({g})={dataset[g]}\n")
 
 
 if __name__ == '__main__':

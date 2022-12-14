@@ -63,11 +63,11 @@ def memoized_group_check(g: AbelianGroup, m: int, memo: set = None, summands: tu
 
     if len(summands) == m - 1:
         summands = (*summands, -sum(summands, start=g.zero))
-        if summands[-1] == g.zero or g.order_map[summands[-1]] < g.order_map[summands[-2]]:
+        if summands[-1] == g.zero or g.element_index_map[summands[-1]] < g.element_index_map[summands[-2]]:
             return True
         return has_zero_subsum(summands, g, memo)
 
-    start = 0 if len(summands) == 0 else g.order_map[summands[-1]]
+    start = 0 if len(summands) == 0 else g.element_index_map[summands[-1]]
     for i in range(start, len(g.non_zero_elements)):
         new_summands = (*summands, g.non_zero_elements[i],)
         if has_zero_subsum(new_summands, g, memo):

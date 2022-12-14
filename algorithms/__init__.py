@@ -4,8 +4,10 @@
 
 from algorithms.naive import NaiveAlgorithm
 from algorithms.annoyingset import AnnoyingSetAlgorithm
+from algorithms.annoyingset_levavs_try import AnnoyingSetAlgorithmLevavsTry
 
 get_loaded = [
     NaiveAlgorithm,
-    AnnoyingSetAlgorithm
+    AnnoyingSetAlgorithm,
+    AnnoyingSetAlgorithmLevavsTry
 ]

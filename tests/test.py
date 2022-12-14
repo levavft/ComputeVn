@@ -10,7 +10,9 @@ import datasets
 
 class MyTestCase(unittest.TestCase):
     def test_validity_main_code(self):
-        f = algorithms.NaiveAlgorithm.memoized_calculate_v
+        # f = algorithms.NaiveAlgorithm.memoized_calculate_v
+        # f = algorithms.AnnoyingSetAlgorithm.memoized_calculate_v
+        f = algorithms.AnnoyingSetAlgorithmLevavsTry.memoized_calculate_v
         for g, v in datasets.curated_small.items():
             with self.subTest(function=f, group=g, value=v):
                 info_string = f"\nfunction: {f.__name__}\ngroup: {g}\nexpected: {v}"

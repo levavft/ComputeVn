@@ -16,16 +16,16 @@ sum = timed(sum)
 
 class ExtendedSummableMultisetPowerset:
     def __init__(self):
-        self.multisets_nontrivial = set()
+        self.multisets_nontrivial = []
         self.master_multiset = SummableMultiset()
 
     def add_element(self, e):
         to_append = self.multisets_nontrivial.copy()
         # print("has: ", self.multisets)
         [m.add(e) for m in self.multisets_nontrivial]
-        self.multisets_nontrivial.add(SummableMultiset([e]))
-        self.multisets_nontrivial = self.multisets_nontrivial.union(to_append)
-        self.multisets_nontrivial.add(self.master_multiset)
+        self.multisets_nontrivial.append(SummableMultiset([e]))
+        self.multisets_nontrivial.extend(to_append)
+        self.multisets_nontrivial.append(self.master_multiset)
         self.master_multiset.add(e)
         # print("has: ", self.multisets)
 
@@ -37,7 +37,7 @@ class ExtendedSummableMultisetPowerset:
 
     def copy(self):
         re = ExtendedSummableMultisetPowerset()
-        [re.multisets_nontrivial.add(m.copy()) for m in self.multisets_nontrivial]
+        [re.multisets_nontrivial.append(m.copy()) for m in self.multisets_nontrivial]
         return re
 
 
@@ -81,7 +81,7 @@ class _AnnoyingSetAlgorithmSingleton(VNAlgorithmBase):
 
             size += 1
 
-            if size > 10:
+            if size > max_tries:
                 raise bruh
 
         return size

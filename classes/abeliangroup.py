@@ -6,17 +6,23 @@ class AbelianGroup:
         # There probably is a type of iterator that has the same functionality and speed as saving an element order map
         # like this, if this code enters sympy its worth looking up the official method.
         self.limit = limit
-        self.non_zero_elements = self.elements(include_zero=False)
-        self.order_map = {e: i for i, e in enumerate(self.non_zero_elements)}
+        self.non_zero_elements = self._elements(include_zero=False)
+        self.with_zero_elements = self._elements()
+        self.element_index_map = {e: i for i, e in enumerate(self.non_zero_elements)}
         self.zero = self._zero()
-        self.order_map[self.zero] = -float(
+        self.element_index_map[self.zero] = -float(
             "inf")  # there's a need to rethink what I do with the zero of our abelian groups...
 
-    def elements(self, include_zero=True):
+    def _elements(self, include_zero=True):
         result = [tuple()]
         for i in range(len(self.limit)):
             result = [(*tup, j) for tup in result for j in range(self.limit[i])]
         return tuple(AbelianGroupElement(r, self.limit) for r in result if include_zero or not sum(r) == 0)
+
+    def elements(self, include_zero=True):
+        if include_zero:
+            return self.with_zero_elements
+        return self.non_zero_elements
 
     def maximal_element_order(self):
         return lcm(self.limit)
