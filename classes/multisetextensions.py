@@ -85,8 +85,6 @@ class SumMultiSet:
             return tuple(sorted(Multiset(self.elements[element] for element in
                                          self.g.equivalence_classes_to_elements_map[equivalence_class] if element in
                                          self.elements).values()))
-        x = tuple(sorted(str(h(equiv)) for equiv in self.g.equivalence_classes_to_elements_map.keys()))
-        y = tuple(str(h(equiv)) for equiv in self.g.equivalence_classes_to_elements_map.keys())
         return hash(tuple(str(h(equiv)) for equiv in self.g.equivalence_classes_to_elements_map.keys()))
 
     def __eq__(self, other):

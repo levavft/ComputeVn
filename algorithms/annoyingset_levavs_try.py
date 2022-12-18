@@ -26,11 +26,7 @@ class _AnnoyingSetAlgorithmLevavsTrySingleton(VNAlgorithmBase):
         Z = {SumMultiSet(g)}
 
         while True:
-            Z_prime = set()
-            for z in Z:
-                for x in g.elements(include_zero=False):
-                    Z_prime.add(z.added(x))
-            # Z_prime = {z.added(x) for z in Z for x in g.elements(include_zero=False)[z.maximal_element_index:]}
+            Z_prime = {z.added(x) for z in Z for x in g.elements(include_zero=False)[z.maximal_element_index:]}
             Z = {z for z in Z_prime if not z.has_zero_sub_multiset_sum()}
             size += 1
             if size >= 2 and all(map(lambda x: not x.sums_to_zero(), Z)):
