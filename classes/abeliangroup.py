@@ -13,6 +13,7 @@ class AbelianGroup:
         self.element_index_map[self.zero] = -float(
             "inf")  # there's a need to rethink what I do with the zero of our abelian groups...
         self.sum_map = dict()
+        self.diff_map = dict()
 
     def _elements(self, include_zero=True):
         result = [tuple()]
@@ -100,10 +101,11 @@ class AbelianGroupElement:
         return self.__add__(other)
 
     def __sub__(self, other):
-        other = self.__interact(other)
-        return AbelianGroupElement(
-            tuple((self.value[i] - other.value[i]) % self.g.limit[i] for i in range(len(self.value))),
-            self.g)
+        if (self, other) not in self.g.diff_map:
+            other_fixed = self.__interact(other)
+            self.g.diff_map[(self, other)] = AbelianGroupElement(
+                tuple((self.value[i] - other_fixed.value[i]) % self.g.limit[i] for i in range(len(self.value))), self.g)
+        return self.g.diff_map[(self, other)]
 
     def __neg__(self):
         return self.__zero_like() - self
