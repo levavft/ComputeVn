@@ -3,6 +3,7 @@ import copy
 from multiset import Multiset
 from classes.abeliangroup import AbelianGroup
 from classes.helpers.timer import Timer
+from random import getrandbits
 
 # make decorator
 timed = Timer.measure
@@ -50,6 +51,7 @@ class SumMultiSet:
         self.g = g
         # it can be assumed that this is the index of the last inserted element.
         self.maximal_element_index = 0
+        self._hash = getrandbits(64)
 
     def add(self, e):
         # the multiplicity variable is needed because of super(), but shouldn't exist for us.
@@ -73,6 +75,9 @@ class SumMultiSet:
         new = copy.copy(self)
         new.add(e)
         return new
+
+    def __hash__(self):
+        return self._hash
 
     def __str__(self):
         return str(self.elements)

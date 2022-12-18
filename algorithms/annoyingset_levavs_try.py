@@ -22,11 +22,11 @@ class _AnnoyingSetAlgorithmLevavsTrySingleton(VNAlgorithmBase):
     def memoized_calculate_v(self, g: AbelianGroup, max_tries: int = 10) -> int:
 
         size = 0
-        Z = [SumMultiSet(g)]
+        Z = {SumMultiSet(g)}
 
         while True:
-            Z_prime = [z.added(x) for z in Z for x in g.elements(include_zero=False)[z.maximal_element_index:]]
-            Z = [z for z in Z_prime if not z.has_zero_sub_multiset_sum()]
+            Z_prime = {z.added(x) for z in Z for x in g.elements(include_zero=False)[z.maximal_element_index:]}
+            Z = {z for z in Z_prime if not z.has_zero_sub_multiset_sum()}
             size += 1
             if size >= 2 and all(map(lambda x: not x.sums_to_zero(), Z)):
                 break
