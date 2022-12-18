@@ -17,7 +17,7 @@ class AbelianGroup:
         result = [tuple()]
         for i in range(len(self.limit)):
             result = [(*tup, j) for tup in result for j in range(self.limit[i])]
-        return tuple(AbelianGroupElement(r, self.limit) for r in result if include_zero or not sum(r) == 0)
+        return tuple(AbelianGroupElement(r, self) for r in result if include_zero or not sum(r) == 0)
 
     def elements(self, include_zero=True):
         if include_zero:
@@ -37,7 +37,7 @@ class AbelianGroup:
         return len(self.limit)
 
     def _zero(self):
-        return AbelianGroupElement((0,) * len(self.limit), self.limit)
+        return AbelianGroupElement((0,) * len(self.limit), self)
 
     def __add__(self, other):
         assert isinstance(other, AbelianGroup)
@@ -58,31 +58,31 @@ class AbelianGroup:
 
 
 class AbelianGroupElement:
-    def __init__(self, value: tuple, limit: tuple):
+    def __init__(self, value: tuple, g: AbelianGroup):
         """
         examples for the case of the element (2, 3) in C_4+C_4
         :param value: (2, 3)
         :param limit: (4, 4)
         """
         self.value = value
-        self.limit = limit
+        self.g = g
         self._hash = None
 
     def __zero_like(self):
-        return AbelianGroupElement((0,) * len(self.limit), self.limit)
+        return self.g.zero
 
     def __interact(self, other):
         assert isinstance(other, AbelianGroupElement) or other == 0
         if other == 0:
             other = self.__zero_like()
-        assert self.limit == other.limit
+        assert self.g == other.g
         return other
 
     def __add__(self, other):
         other = self.__interact(other)
         return AbelianGroupElement(
-            tuple((self.value[i] + other.value[i]) % self.limit[i] for i in range(len(self.value))),
-            self.limit)
+            tuple((self.value[i] + other.value[i]) % self.g.limit[i] for i in range(len(self.value))),
+            self.g)
 
     def __mul__(self, other):
         assert isinstance(other, int)
@@ -100,19 +100,19 @@ class AbelianGroupElement:
     def __sub__(self, other):
         other = self.__interact(other)
         return AbelianGroupElement(
-            tuple((self.value[i] - other.value[i]) % self.limit[i] for i in range(len(self.value))),
-            self.limit)
+            tuple((self.value[i] - other.value[i]) % self.g.limit[i] for i in range(len(self.value))),
+            self.g)
 
     def __neg__(self):
         return self.__zero_like() - self
 
     def __eq__(self, other):
         other = self.__interact(other)
-        return (self.value, self.limit) == (other.value, other.limit)
+        return (self.value, self.g) == (other.value, other.g)
 
     def __hash__(self):
         if self._hash is None:
-            self._hash = hash(f"AbelianGroupElement<{(self.value, self.limit)}>")
+            self._hash = hash(f"AbelianGroupElement<{(self.value, self.g)}>")
         return self._hash
 
     def __repr__(self):
