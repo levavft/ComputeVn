@@ -1,8 +1,9 @@
 import copy
 
 from multiset import Multiset
-from classes.abeliangroup import AbelianGroup
+from classes.abeliangroup import AbelianGroup, AbelianGroupElement
 from classes.helpers.timer import Timer
+from functools import cache
 from random import getrandbits
 
 # make decorator
@@ -42,24 +43,26 @@ class SummableMultiset(Multiset):
 
 
 class SumMultiSet:
-    def __init__(self, g: AbelianGroup):
+    def __init__(self, g: AbelianGroup, parent=None):
         # Due to the nature of SumMultiSet, it is better to add one element at a time,
         # hence it is initiated with no elements.
-        self.elements = Multiset()
-        self.tracked_sum = 0
-        self.sub_multiset_sums = set()
+        self.elements = Multiset() if parent is None else Multiset(parent.elements)
+        self.equivalence_classes = Multiset() if parent is None else Multiset(parent.equivalence_classes)
+        self.tracked_sum = 0 if parent is None else parent.tracked_sum
+        self.sub_multiset_sums = set() if parent is None else set(parent.sub_multiset_sums)
         self.g = g
         # it can be assumed that this is the index of the last inserted element.
-        self.maximal_element_index = 0
-        self._hash = getrandbits(64)
+        self.maximal_element_index = 0 if parent is None else parent.maximal_element_index
+        # self._hash = getrandbits(64)
 
-    def add(self, e):
+    def add(self, e: AbelianGroupElement):
         # the multiplicity variable is needed because of super(), but shouldn't exist for us.
         if len(self.elements) > 0:
             self.sub_multiset_sums = self.sub_multiset_sums | {s + e for s in self.sub_multiset_sums} | {self.tracked_sum, e}
         self.maximal_element_index = self.g.element_index_map[e]
         self.tracked_sum = self.tracked_sum + e
         self.elements.add(e)
+        self.equivalence_classes.add(e.equivalence_class())
 
     def get_sum(self):
         return self.tracked_sum
@@ -68,16 +71,26 @@ class SumMultiSet:
         return self.tracked_sum == 0
 
     def has_zero_sub_multiset_sum(self):
-        return self.g.zero in self.sub_multiset_sums
+        return self.g.zero in self.sub_multiset_sums or 0 in self.sub_multiset_sums
 
     def added(self, e):
         # this is inline addition of an element, the name is based on python's sorted/sort distinction.
-        new = copy.copy(self)
+        new = SumMultiSet(self.g, parent=self)
         new.add(e)
         return new
 
+    # @cache
     def __hash__(self):
-        return self._hash
+        def h(equivalence_class):
+            return tuple(sorted(Multiset(self.elements[element] for element in
+                                         self.g.equivalence_classes_to_elements_map[equivalence_class] if element in
+                                         self.elements).values()))
+        x = tuple(sorted(str(h(equiv)) for equiv in self.g.equivalence_classes_to_elements_map.keys()))
+        y = tuple(str(h(equiv)) for equiv in self.g.equivalence_classes_to_elements_map.keys())
+        return hash(tuple(str(h(equiv)) for equiv in self.g.equivalence_classes_to_elements_map.keys()))
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
     def __str__(self):
         return str(self.elements)

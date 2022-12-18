@@ -1,11 +1,15 @@
 from sympy import lcm, primefactors
+from multiset import Multiset
 
 
 class AbelianGroup:
     def __init__(self, limit: tuple):
         # There probably is a type of iterator that has the same functionality and speed as saving an element order map
         # like this, if this code enters sympy its worth looking up the official method.
-        self.limit = limit
+        # TODO: it is likely that elements are created an excessive amount of times. due the elements becoming more
+        #  and more complex it is imperative to create a model in which elements are never recreated.
+        self.limit = tuple(sorted(limit))
+        self.limit_breaks = self._get_limit_breaks()
         self.non_zero_elements = self._elements(include_zero=False)
         self.with_zero_elements = self._elements()
         self.element_index_map = {e: i for i, e in enumerate(self.non_zero_elements)}
@@ -14,6 +18,19 @@ class AbelianGroup:
             "inf")  # there's a need to rethink what I do with the zero of our abelian groups...
         self.sum_map = dict()
         self.diff_map = dict()
+        self.equivalence_classes_to_elements_map = dict()
+        self.generate_equivalence_classes()
+
+    def generate_equivalence_classes(self):
+        for element in self.with_zero_elements:
+            equiv = element.equivalence_class()
+            if equiv not in self.equivalence_classes_to_elements_map:
+                self.equivalence_classes_to_elements_map[equiv] = set()
+            self.equivalence_classes_to_elements_map[equiv].add(element)
+
+    def _get_limit_breaks(self):
+        limits = [0] + [i for i in range(1, len(self.limit)) if self.limit[i - 1] != self.limit[i]] + [None]
+        return [(limits[i], limits[i + 1]) for i in range(len(limits) - 1)]
 
     def _elements(self, include_zero=True):
         result = [tuple()]
@@ -69,6 +86,7 @@ class AbelianGroupElement:
         self.value = value
         self.g = g
         self._hash = None
+        self._equivalence_class = None
 
     def __zero_like(self):
         return self.g.zero
@@ -79,6 +97,13 @@ class AbelianGroupElement:
             other = self.__zero_like()
         assert self.g == other.g
         return other
+
+    def equivalence_class(self):
+        if self._equivalence_class is None:
+            self._equivalence_class = tuple(tuple(sorted([(k, v) for k, v in Multiset(self.value[i: j]).items()]
+                                                         , key=lambda x: x[0]))
+                                            for i, j in self.g.limit_breaks)
+        return self._equivalence_class
 
     def __add__(self, other):
         if (self, other) not in self.g.sum_map:
