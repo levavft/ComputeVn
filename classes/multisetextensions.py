@@ -47,7 +47,6 @@ class SumMultiSet:
         # Due to the nature of SumMultiSet, it is better to add one element at a time,
         # hence it is initiated with no elements.
         self.elements = Multiset() if parent is None else Multiset(parent.elements)
-        self.equivalence_classes = Multiset() if parent is None else Multiset(parent.equivalence_classes)
         self.tracked_sum = 0 if parent is None else parent.tracked_sum
         self.sub_multiset_sums = set() if parent is None else set(parent.sub_multiset_sums)
         self.g = g
@@ -63,7 +62,6 @@ class SumMultiSet:
         self.maximal_element_index = self.g.element_index_map[e]
         self.tracked_sum = self.tracked_sum + e
         self.elements.add(e)
-        self.equivalence_classes.add(e.equivalence_class())
         self._prehash = None
 
     def get_sum(self):
@@ -81,14 +79,28 @@ class SumMultiSet:
         new.add(e)
         return new
 
-    def __hash__(self):
+    @staticmethod
+    def __calculate_pre_hash(g: AbelianGroup, elements: Multiset):
         def h(equivalence_class):
-            return tuple(sorted(Multiset(self.elements[element] for element in
-                                         self.g.equivalence_classes_to_elements_map[equivalence_class] if element in
-                                         self.elements).values()))
+            return tuple(sorted(Multiset(elements[element] for element in
+                                         g.equivalence_classes_to_elements_map[equivalence_class] if element in
+                                         elements).values()))
+
+        return [str(h(equiv)) for equiv in g.equivalence_classes]
+
+    @staticmethod
+    def __hash_from_prehash(prehash):
+        return hash(tuple(prehash))
+
+    def hash_if_added(self, e: AbelianGroupElement):
+        elements = Multiset(self.elements)
+        elements.add(e)
+        return SumMultiSet.__hash_from_prehash(SumMultiSet.__calculate_pre_hash(self.g, elements))
+
+    def __hash__(self):
         if self._prehash is None:
-            self._prehash = [str(h(equiv)) for equiv in self.g.equivalence_classes]
-        return hash(tuple(self._prehash))
+            self._prehash = SumMultiSet.__calculate_pre_hash(self.g, self.elements)
+        return SumMultiSet.__hash_from_prehash(self._prehash)
 
     def __eq__(self, other):
         return hash(self) == hash(other)
