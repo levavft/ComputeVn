@@ -1,13 +1,12 @@
 from sympy import lcm, primefactors
 from multiset import Multiset
+from functools import cache
 
 
 class AbelianGroup:
     def __init__(self, limit: tuple):
         # There probably is a type of iterator that has the same functionality and speed as saving an element order map
         # like this, if this code enters sympy its worth looking up the official method.
-        # TODO: it is likely that elements are created an excessive amount of times. due the elements becoming more
-        #  and more complex it is imperative to create a model in which elements are never recreated.
         self.limit = tuple(sorted(limit))
         self.limit_breaks = self._get_limit_breaks()
         self.non_zero_elements = self._elements(include_zero=False)
@@ -16,12 +15,11 @@ class AbelianGroup:
         self.zero = self._zero()
         self.element_index_map[self.zero] = -float(
             "inf")  # there's a need to rethink what I do with the zero of our abelian groups...
-        self.sum_map = dict()
-        self.diff_map = dict()
         self.equivalence_classes_to_elements_map = dict()
-        self.generate_equivalence_classes()
+        self.__generate_equivalence_classes()
+        self.equivalence_classes = list(sorted(self.equivalence_classes_to_elements_map.keys()))
 
-    def generate_equivalence_classes(self):
+    def __generate_equivalence_classes(self):
         for element in self.with_zero_elements:
             equiv = element.equivalence_class()
             if equiv not in self.equivalence_classes_to_elements_map:
@@ -29,6 +27,10 @@ class AbelianGroup:
             self.equivalence_classes_to_elements_map[equiv].add(element)
 
     def _get_limit_breaks(self):
+        # limit breaks aim to describe runs of the same number in 'self.limit'.
+        # if the limit is (a,a,a,b,b,b,c,c,d) the limit breaks are: [(0, 3), (3, 6), (6, 8), (8, None)]
+        # this is useful since we can slice our group elements at the limit breaks.
+        # for example: 'elem[8: None]' is the same as 'elem[8:]'
         limits = [0] + [i for i in range(1, len(self.limit)) if self.limit[i - 1] != self.limit[i]] + [None]
         return [(limits[i], limits[i + 1]) for i in range(len(limits) - 1)]
 
@@ -92,45 +94,28 @@ class AbelianGroupElement:
         return self.g.zero
 
     def __interact(self, other):
-        assert isinstance(other, AbelianGroupElement) or other == 0
         if other == 0:
             other = self.__zero_like()
-        assert self.g == other.g
         return other
 
+    @cache
     def equivalence_class(self):
-        if self._equivalence_class is None:
-            self._equivalence_class = tuple(tuple(sorted([(k, v) for k, v in Multiset(self.value[i: j]).items()]
-                                                         , key=lambda x: x[0]))
-                                            for i, j in self.g.limit_breaks)
-        return self._equivalence_class
+        return tuple(tuple(sorted([(k, v) for k, v in Multiset(self.value[i: j]).items()], key=lambda x: x[0]))
+                     for i, j in self.g.limit_breaks)
 
+    @cache
     def __add__(self, other):
-        if (self, other) not in self.g.sum_map:
-            other_fixed = self.__interact(other)
-            self.g.sum_map[(self, other)] = AbelianGroupElement(
-                tuple((self.value[i] + other_fixed.value[i]) % self.g.limit[i] for i in range(len(self.value))), self.g)
-        return self.g.sum_map[(self, other)]
+        return AbelianGroupElement(
+                tuple((self.value[i] + self.__interact(other).value[i]) % self.g.limit[i] for i in range(len(self.value))), self.g)
 
-    def __mul__(self, other):
-        assert isinstance(other, int)
-        s = self
-        for i in range(other - 1):
-            s = s + self
-        return s
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
+    @cache
     def __radd__(self, other):
         return self.__add__(other)
 
+    @cache
     def __sub__(self, other):
-        if (self, other) not in self.g.diff_map:
-            other_fixed = self.__interact(other)
-            self.g.diff_map[(self, other)] = AbelianGroupElement(
-                tuple((self.value[i] - other_fixed.value[i]) % self.g.limit[i] for i in range(len(self.value))), self.g)
-        return self.g.diff_map[(self, other)]
+        return AbelianGroupElement(
+                tuple((self.value[i] - self.__interact(other).value[i]) % self.g.limit[i] for i in range(len(self.value))), self.g)
 
     def __neg__(self):
         return self.__zero_like() - self

@@ -1,6 +1,6 @@
 import copy
 
-from multiset import Multiset
+from multiset import Multiset, FrozenMultiset
 from classes.abeliangroup import AbelianGroup, AbelianGroupElement
 from classes.helpers.timer import Timer
 from functools import cache
@@ -53,7 +53,8 @@ class SumMultiSet:
         self.g = g
         # it can be assumed that this is the index of the last inserted element.
         self.maximal_element_index = 0 if parent is None else parent.maximal_element_index
-        # self._hash = getrandbits(64)
+
+        self._prehash = None
 
     def add(self, e: AbelianGroupElement):
         # the multiplicity variable is needed because of super(), but shouldn't exist for us.
@@ -63,6 +64,7 @@ class SumMultiSet:
         self.tracked_sum = self.tracked_sum + e
         self.elements.add(e)
         self.equivalence_classes.add(e.equivalence_class())
+        self._prehash = None
 
     def get_sum(self):
         return self.tracked_sum
@@ -79,13 +81,14 @@ class SumMultiSet:
         new.add(e)
         return new
 
-    # @cache
     def __hash__(self):
         def h(equivalence_class):
             return tuple(sorted(Multiset(self.elements[element] for element in
                                          self.g.equivalence_classes_to_elements_map[equivalence_class] if element in
                                          self.elements).values()))
-        return hash(tuple(str(h(equiv)) for equiv in self.g.equivalence_classes_to_elements_map.keys()))
+        if self._prehash is None:
+            self._prehash = [str(h(equiv)) for equiv in self.g.equivalence_classes]
+        return hash(tuple(self._prehash))
 
     def __eq__(self, other):
         return hash(self) == hash(other)
