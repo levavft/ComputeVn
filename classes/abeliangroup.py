@@ -66,6 +66,7 @@ class AbelianGroupElement:
         """
         self.value = value
         self.limit = limit
+        self._hash = None
 
     def __zero_like(self):
         return AbelianGroupElement((0,) * len(self.limit), self.limit)
@@ -110,7 +111,9 @@ class AbelianGroupElement:
         return (self.value, self.limit) == (other.value, other.limit)
 
     def __hash__(self):
-        return hash(f"AbelianGroupElement<{(self.value, self.limit)}>")
+        if self._hash is None:
+            self._hash = hash(f"AbelianGroupElement<{(self.value, self.limit)}>")
+        return self._hash
 
     def __repr__(self):
         return str(self.value)
