@@ -48,7 +48,7 @@ class SumMultiSet:
         # hence it is initiated with no elements.
         self.elements = Multiset() if parent is None else Multiset(parent.elements)
         self.tracked_sum = 0 if parent is None else parent.tracked_sum
-        self.sub_multiset_sums = set() if parent is None else set(parent.sub_multiset_sums)
+        self.sub_multiset_sums = frozenset() if parent is None else frozenset(parent.sub_multiset_sums)
         self.g = g
         # it can be assumed that this is the index of the last inserted element.
         self.maximal_element_index = 0 if parent is None else parent.maximal_element_index
@@ -56,9 +56,8 @@ class SumMultiSet:
         self._prehash = None
 
     def add(self, e: AbelianGroupElement):
-        # the multiplicity variable is needed because of super(), but shouldn't exist for us.
         if len(self.elements) > 0:
-            self.sub_multiset_sums = self.sub_multiset_sums | {s + e for s in self.sub_multiset_sums} | {self.tracked_sum, e}
+            self.sub_multiset_sums = self.sub_multiset_sums | frozenset(s + e for s in self.sub_multiset_sums) | frozenset((self.tracked_sum, e))
         self.maximal_element_index = self.g.element_index_map[e]
         self.tracked_sum = self.tracked_sum + e
         self.elements.add(e)
