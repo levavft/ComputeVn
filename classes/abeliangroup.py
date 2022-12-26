@@ -1,6 +1,7 @@
 from sympy import lcm, primefactors
 from multiset import Multiset
 from functools import cache
+from math import prod
 
 
 class AbelianGroup:
@@ -9,8 +10,11 @@ class AbelianGroup:
         # like this, if this code enters sympy its worth looking up the official method.
         self.limit = tuple(sorted(limit))
         self.limit_breaks = self._get_limit_breaks()
+        # TODO this will probably end up replacing the previous two things.
+        self.prime_powers, self.exponents = AbelianGroup.__get_low_canonical_form(limit)
+
         self.non_zero_elements = self._elements(include_zero=False)
-        self.with_zero_elements = self._elements()
+        self.with_zero_elements = self._elements() # TODO should probably be removed and cleaned up
         self.element_index_map = {e: i for i, e in enumerate(self.non_zero_elements)}
         self.zero = self._zero()
         self.element_index_map[self.zero] = -float(
@@ -18,6 +22,29 @@ class AbelianGroup:
         self.equivalence_classes_to_elements_map = dict()
         self.__generate_equivalence_classes()
         self.equivalence_classes = list(sorted(self.equivalence_classes_to_elements_map.keys()))
+
+    @staticmethod
+    def __get_low_canonical_form(limit):
+        def maximal_divisor(_p, _n):
+            _exponent = 0
+            _power = _p
+            while _n % _power == 0:
+                _power *= _p
+                _exponent += 1
+            return _exponent, _power // _p
+
+        prime_powers = dict()
+        exponents = dict()
+        for n in limit:
+            for p in primefactors(n):
+                if p not in prime_powers:
+                    # TODO this probably shouldnt be multiset/ should be converted to a sorted list later on.
+                    prime_powers[p] = Multiset()
+                    exponents[p] = Multiset()
+                exp, power = maximal_divisor(p, n)
+                prime_powers[p].add(power)
+                exponents[p].add(exp)
+        return prime_powers, exponents
 
     def __generate_equivalence_classes(self):
         for element in self.with_zero_elements:
@@ -33,6 +60,28 @@ class AbelianGroup:
         # for example: 'elem[8: None]' is the same as 'elem[8:]'
         limits = [0] + [i for i in range(1, len(self.limit)) if self.limit[i - 1] != self.limit[i]] + [None]
         return [(limits[i], limits[i + 1]) for i in range(len(limits) - 1)]
+
+    def get_automorphism_group_size(self):
+        # TODO for now, this only works if the group is a p-group.
+        if not self.is_pgroup():
+            return None
+
+        def d(k):
+            # TODO this should be done with the limit breaks
+            return max(l for l in rng if limit[l] == limit[k])
+
+        def c(k):
+            # TODO this should be done with the limit breaks
+            return min(l for l in rng if limit[l] == limit[k])
+
+        limit = [None] + list(self.limit)
+        n = len(limit)
+        rng = range(1, n)
+        p = primefactors(self.limit[0])[0]
+
+        return prod(p ** (d(k)) - p ** (k - 1) for k in rng) * \
+               prod((p ** limit[j]) ** (n - d(j)) for j in rng) * \
+               prod((p ** (limit[i] - 1)) ** (n - c(i) + 1) for i in rng)
 
     def _elements(self, include_zero=True):
         result = [tuple()]
@@ -106,7 +155,8 @@ class AbelianGroupElement:
     @cache
     def __add__(self, other):
         return AbelianGroupElement(
-                tuple((self.value[i] + self.__interact(other).value[i]) % self.g.limit[i] for i in range(len(self.value))), self.g)
+            tuple((self.value[i] + self.__interact(other).value[i]) % self.g.limit[i] for i in range(len(self.value))),
+            self.g)
 
     @cache
     def __radd__(self, other):
@@ -115,7 +165,8 @@ class AbelianGroupElement:
     @cache
     def __sub__(self, other):
         return AbelianGroupElement(
-                tuple((self.value[i] - self.__interact(other).value[i]) % self.g.limit[i] for i in range(len(self.value))), self.g)
+            tuple((self.value[i] - self.__interact(other).value[i]) % self.g.limit[i] for i in range(len(self.value))),
+            self.g)
 
     def __neg__(self):
         return self.__zero_like() - self
