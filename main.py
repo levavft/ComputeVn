@@ -17,11 +17,14 @@ print("\n")
 
 @timed
 def main():
-    dataset = datasets.curated_small
+    # dataset = datasets.curated_small
 
+    # for g in dataset.keys():
+    #     print(
+    #         f"Calculated: V({g})={algorithms.AnnoyingSetAlgorithmLevavsTry.memoized_calculate_v(g)}\nExpected: V({g})={dataset[g]}\n")
+    dataset = datasets.all
     for g in dataset.keys():
-        print(
-            f"Calculated: V({g})={algorithms.AnnoyingSetAlgorithmLevavsTry.memoized_calculate_v(g)}\nExpected: V({g})={dataset[g]}\n")
+        print(g, len(g.elements()), g.get_automorphism_group_size())
 
 
 if __name__ == '__main__':

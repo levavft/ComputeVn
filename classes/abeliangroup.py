@@ -62,26 +62,22 @@ class AbelianGroup:
         return [(limits[i], limits[i + 1]) for i in range(len(limits) - 1)]
 
     def get_automorphism_group_size(self):
-        # TODO for now, this only works if the group is a p-group.
-        if not self.is_pgroup():
-            return None
+        def d(k, _e, _rng):
+            return max(l for l in _rng if _e[l] == _e[k])
 
-        def d(k):
-            # TODO this should be done with the limit breaks
-            return max(l for l in rng if limit[l] == limit[k])
+        def c(k, _e, _rng):
+            return min(l for l in _rng if _e[l] == _e[k])
 
-        def c(k):
-            # TODO this should be done with the limit breaks
-            return min(l for l in rng if limit[l] == limit[k])
+        def prime_aut(p, e):
+            # Weird parts of the code are here to force the calculation to look exactly like the paper's calculation.
+            e = [None] + list(sorted(e))
+            rng = range(1, len(e))
+            n = len(e) - 1
+            return prod(p ** d(k, e, rng) - p ** (k - 1) for k in rng) * \
+                   prod((p ** e[j]) ** (n - d(j, e, rng)) for j in rng) * \
+                   prod((p ** (e[i] - 1)) ** (n - c(i, e, rng) + 1) for i in rng)
 
-        limit = [None] + list(self.limit)
-        n = len(limit)
-        rng = range(1, n)
-        p = primefactors(self.limit[0])[0]
-
-        return prod(p ** (d(k)) - p ** (k - 1) for k in rng) * \
-               prod((p ** limit[j]) ** (n - d(j)) for j in rng) * \
-               prod((p ** (limit[i] - 1)) ** (n - c(i) + 1) for i in rng)
+        return prod(prime_aut(p, s) for p, s in self.exponents.items())
 
     def _elements(self, include_zero=True):
         result = [tuple()]
